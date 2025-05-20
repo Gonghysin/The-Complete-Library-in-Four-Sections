@@ -6,7 +6,13 @@
 
 ## 目录
 <!-- AUTO_DIR_START -->
-<!-- The content below is auto-generated based on the directory structure. Do not edit manually. -->
+- **情感_心理相关/**
+- **技术相关/**
+  - **老景/**
+    - [老景基础课](情感_心理相关/老景/老景基础课.md)
+    - [老景进阶课](情感_心理相关/老景/老景进阶课.md)
+  - **吴恩达/**
+    - [吴恩达-《AI for everyone》](技术相关/吴恩达/吴恩达-《AI for everyone》.md)
 <!-- AUTO_DIR_END -->
 
 如有建议或资源推荐，欢迎提交 issue 或 pull request！
