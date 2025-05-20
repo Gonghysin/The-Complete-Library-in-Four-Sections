@@ -1,1 +1,12 @@
-# -_-
+# 心海的书籍导航
+
+欢迎来到心海的书籍导航！这里收录了各类优质书籍的学习笔记与资料，涵盖人工智能、编程、技术、管理等多个领域。无论你是初学者还是进阶者，都可以在这里找到适合自己的内容。  
+本仓库旨在帮助大家高效获取知识、系统整理学习内容，并持续更新更多优质资源。  
+欢迎大家一起学习、交流与进步！
+
+## 目录
+<!-- AUTO_DIR_START -->
+<!-- The content below is auto-generated based on the directory structure. Do not edit manually. -->
+<!-- AUTO_DIR_END -->
+
+如有建议或资源推荐，欢迎提交 issue 或 pull request！
