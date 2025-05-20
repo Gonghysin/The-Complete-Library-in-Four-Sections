@@ -19,85 +19,16 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Create directory generation script
-        run: |
-          mkdir -p .github/scripts
-          cat << 'EOF' > .github/scripts/generate_toc.py
-          import os
-          import sys
-
-          def generate_dir_md(start_path=".", max_depth=3, exclusions=None):
-              if exclusions is None:
-                  # 默认排除的文件和目录名 (不包括路径)
-                  exclusions = {".git", ".github", "LICENSE"} 
-
-              repo_root_abs = os.path.abspath(start_path)
-              markdown_output = []
-
-              for current_root_abs, dirs, files in os.walk(repo_root_abs, topdown=True):
-                  # 计算当前路径相对于仓库根的路径
-                  relative_to_repo_root = os.path.relpath(current_root_abs, repo_root_abs)
-                  
-                  # 计算深度
-                  if relative_to_repo_root == ".":
-                      depth = 0
-                  else:
-                      depth = len(relative_to_repo_root.split(os.sep))
-
-                  # 如果达到最大深度，则不再深入遍历子目录以生成列表项
-                  if depth >= max_depth:
-                      dirs[:] = [] 
-
-                  # 过滤目录 (基于名称)
-                  dirs[:] = [d for d in dirs if d not in exclusions and not d.startswith('.')]
-                  dirs.sort() # 保证顺序一致
-
-                  # 过滤文件 (基于名称)
-                  # 只关心 Markdown 文件，并排除已在 exclusions 列表中的文件
-                  md_files = sorted([f for f in files if f.endswith(".md") and f not in exclusions])
-                  
-                  indent = "  " * depth
-
-                  # 列出当前遍历到的目录下的子目录 (如果未达到最大深度)
-                  if depth < max_depth:
-                      for d_name in dirs:
-                          # 构建用于链接的相对路径 (相对于仓库根)
-                          dir_link_path = os.path.join(relative_to_repo_root if relative_to_repo_root != "." else "", d_name).replace("\\", "/")
-                          
-                          readme_in_subdir_abs = os.path.join(current_root_abs, d_name, "README.md")
-                          if os.path.exists(readme_in_subdir_abs):
-                              markdown_output.append(f"{indent}- [{d_name}/]({dir_link_path}/README.md)")
-                          else:
-                              markdown_output.append(f"{indent}- **{d_name}/**")
-                  
-                  # 列出当前遍历到的目录下的 Markdown 文件
-                  for f_name in md_files:
-                      # 特殊处理：不把仓库根目录的 README.md 列出来
-                      if depth == 0 and f_name == "README.md" and relative_to_repo_root == ".":
-                          continue
-
-                      file_link_path = os.path.join(relative_to_repo_root if relative_to_repo_root != "." else "", f_name).replace("\\", "/")
-                      link_text = f_name[:-3] # 去掉 .md 后缀
-                      markdown_output.append(f"{indent}- [{link_text}]({file_link_path})")
-                          
-              return "\n".join(markdown_output)
-
-          if __name__ == "__main__":
-              output_file_name = "dir_structure.md" # 临时文件名
-              # 允许通过命令行参数指定输出文件名
-              if len(sys.argv) > 1:
-                  output_file_name = sys.argv[1]
-              
-              # 假设脚本从仓库根目录运行
-              toc_content = generate_dir_md(".", max_depth=3) 
-              with open(output_file_name, "w", encoding="utf-8") as f:
-                  f.write(toc_content)
-              print(f"Generated directory structure in {output_file_name}")
-          EOF
+      # Python script is now a separate file, so the inline creation step is removed.
+      # Ensure .github/scripts/generate_toc.py is committed to your repository.
 
       - name: Generate directory structure
         id: generate_dir
         run: |
+          # Create the directory for the script if it might not exist (though it should be committed)
+          mkdir -p .github/scripts
+          # Ensure the script is executable (optional, as we are calling it with python)
+          # chmod +x .github/scripts/generate_toc.py 
           python .github/scripts/generate_toc.py dir_structure.md
           echo "Generated structure preview:"
           cat dir_structure.md
@@ -114,51 +45,44 @@ jobs:
           END_MARKER="<!-- AUTO_DIR_END -->"
           README_FILE="README.md"
           TEMP_README="README.md.tmp" # 临时文件
-          # 从上一步获取生成的内容
           DIR_STRUCTURE_CONTENT="${{ steps.generate_dir.outputs.structure_content }}"
 
-          # 将生成的内容写入一个临时文件，便于 awk 读取
           echo "$DIR_STRUCTURE_CONTENT" > .generated_dir_content.md
 
-          # 使用 awk 在标记之间替换内容
           awk -v start_marker="$START_MARKER" -v end_marker="$END_MARKER" -v structure_input_file=".generated_dir_content.md" '
             BEGIN { in_block = 0; printed_new_content = 0; }
             $0 ~ start_marker {
-              print; # 打印起始标记行
-              # 打印新内容
+              print;
               while ((getline line < structure_input_file) > 0) {
                 print line;
               }
               close(structure_input_file);
-              in_block = 1; # 进入标记块
-              printed_new_content = 1;
+              in_block = 1; printed_new_content = 1;
               next;
             }
             $0 ~ end_marker {
               if (in_block) {
-                print; # 打印结束标记行
-                in_block = 0; # 退出标记块
+                print;
+                in_block = 0;
                 next;
               }
             }
-            !in_block { print; } # 打印标记块之外的行
+            !in_block { print; }
             END {
               if (!printed_new_content && NR > 0) {
-                # 如果文件非空但标记未找到，可能需要警告，但 awk 默认会输出原文件内容
-                # print "Warning: Markers not found in README.md. No changes made to content section." > "/dev/stderr"
+                # Potential warning if markers not found
               }
             }' "$README_FILE" > "$TEMP_README"
 
-          rm .generated_dir_content.md # 清理临时文件
+          rm .generated_dir_content.md
 
-          # 比较原文件和修改后的临时文件
           if ! cmp -s "$README_FILE" "$TEMP_README"; then
             echo "README.md is being updated."
             mv "$TEMP_README" "$README_FILE"
             echo "changes_made=true" >> $GITHUB_OUTPUT
           else
             echo "No changes to README.md needed."
-            rm "$TEMP_README" # 如果没有变化，删除临时文件
+            rm "$TEMP_README"
             echo "changes_made=false" >> $GITHUB_OUTPUT
           fi
 
@@ -168,6 +92,6 @@ jobs:
         with:
           commit_message: "docs: Auto-update README directory structure"
           file_pattern: README.md
-          # 可选：自定义提交者信息
+          # Optional: custom committer info
           # commit_user_name: github-actions[bot]
           # commit_user_email: github-actions[bot]@users.noreply.github.com 
