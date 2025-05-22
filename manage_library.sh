@@ -120,24 +120,24 @@ if [ "${LOCAL_AHEAD_COUNT}" -gt 0 ]; then
 fi
 
 echo -e "${YELLOW}正在从 'origin/main' 更新本地 'main' 分支...${NC}"
-if ! git pull --no-edit --no-rebase --autostash origin main; then
+if ! git pull -X ours --no-edit --no-rebase --autostash origin main; then
     PULL_EXIT_CODE=$?
     echo -e "${RED}从 'origin/main' 更新本地 'main' 分支失败 (退出码: ${PULL_EXIT_CODE})。${NC}"
-    echo -e "${YELLOW}这可能由合并冲突引起。如果发生冲突，请手动解决它们。${NC}"
+    echo -e "${YELLOW}即使使用了 'ours' 策略，拉取操作也可能因其他原因失败。请检查错误。${NC}"
 else
-    echo -e "${GREEN}本地 'main' 分支已成功更新。${NC}"
+    echo -e "${GREEN}本地 'main' 分支已成功更新（使用 'ours' 策略解决冲突）。${NC}"
 fi
 
 if [ "${ORIGINAL_BRANCH}" != "main" ]; then
     if git rev-list main.."${ORIGINAL_BRANCH}" --count | grep -qE '^[1-9]'; then
-        echo -e "${YELLOW}正在将 '${ORIGINAL_BRANCH}' 分支合并到 'main'...${NC}"
-        if ! git merge --no-edit "${ORIGINAL_BRANCH}"; then
-            echo -e "${RED}将 '${ORIGINAL_BRANCH}' 合并到 'main' 时发生冲突或错误。${NC}"
-            echo -e "${YELLOW}请手动解决冲突，然后提交并推送到 'main'。脚本将在此处终止。${NC}"
+        echo -e "${YELLOW}正在将 '${ORIGINAL_BRANCH}' 分支合并到 'main' (使用 'theirs' 策略解决冲突)...${NC}"
+        if ! git merge -X theirs --no-edit "${ORIGINAL_BRANCH}"; then
+            echo -e "${RED}将 '${ORIGINAL_BRANCH}' 合并到 'main' 时发生错误。${NC}"
+            echo -e "${YELLOW}即使使用了 'theirs' 策略，合并操作也可能因其他原因失败。请手动检查状态。脚本将在此处终止。${NC}"
             if [ "${ORIGINAL_BRANCH}" != "main" ]; then git checkout "${ORIGINAL_BRANCH}" &> /dev/null; fi
             exit 1
         else
-            echo -e "${GREEN}'${ORIGINAL_BRANCH}' 已成功合并到 'main' 分支。${NC}"
+            echo -e "${GREEN}'${ORIGINAL_BRANCH}' 已成功合并到 'main' 分支（使用 'theirs' 策略解决冲突）。${NC}"
         fi
     else
         echo -e "${YELLOW}分支 '${ORIGINAL_BRANCH}' 没有需要合并到 'main' 的新提交。${NC}"
