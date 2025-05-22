@@ -8,8 +8,8 @@
 
 ## 联系我与关注我
 
-*   🌐 **个人主页**: [chaoqian.online](http://chaoqian.online)
-*   📝 **博客**: [boke.chaoqian.online](http://boke.chaoqian.online)
+*   🌐 **个人主页**: [chatghx.com](http://chatghx.com)
+*   📝 **博客**: [blog.chatghx.com](http://blog.chatghx.com)
 *   🐙 **GitHub**: [@Gonghysin](https://github.com/Gonghysin)
 *   🐧 **QQ**: 3291053545
 *   💬 **微信**: ChatGHX
