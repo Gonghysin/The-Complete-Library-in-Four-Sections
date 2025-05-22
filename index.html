@@ -58,15 +58,25 @@
             // 创建目录列表
             let ul = document.createElement('ul');
             headers.forEach(header => {
-              if (!header.id) {
-                // 如果标题没有id，自动生成
-                header.id = header.textContent.trim().toLowerCase().replace(/\s+/g, '-');
+              let id = header.id; // Use Docsify's auto-generated ID if available
+              if (!id) {
+                // Fallback to generate an ID if Docsify didn't create one
+                // This slugification should ideally match Docsify's own for consistency
+                // Or ensure Docsify uses these generated IDs.
+                id = header.textContent.trim().toLowerCase()
+                  .replace(/[^\\w\\s-一-龥]/g, '') // Keep CJK characters, remove most punctuation
+                  .replace(/\\s+/g, '-');
+                header.id = id; // Assign the generated ID to the header element
               }
+              
               let li = document.createElement('li');
               li.style.marginLeft = header.tagName === 'H2' ? '20px' : '0';
               let a = document.createElement('a');
-              a.href = '#' + header.id;
               a.textContent = header.textContent;
+              
+              // Construct the full hash path for the link, including the current page path from vm.route
+              a.href = '#' + vm.route.path + '?id=' + id; 
+
               li.appendChild(a);
               ul.appendChild(li);
             });
