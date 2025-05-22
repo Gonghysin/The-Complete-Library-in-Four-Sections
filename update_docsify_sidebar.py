@@ -4,15 +4,14 @@ import sys
 # --- Configuration ---
 # Directory containing the books/notes, relative to the project root
 CONTENT_SOURCE_DIR_NAME = "books"
-# Docsify's root directory, relative to the project root
-DOCSIFY_ROOT_DIR_NAME = "docs"
-# Name of the sidebar file within DOCSIFY_ROOT_DIR_NAME
+# Docsify's root directory. Empty string means project root.
+DOCSIFY_ROOT_DIR_NAME = "" 
+# Name of the sidebar file
 SIDEBAR_FILENAME = "_sidebar.md"
 
-# Link prefix for sidebar items to point from 'docs/' to 'books/'
-# e.g., if sidebar is docs/_sidebar.md and content is books/topic/file.md,
-# the link should be ../books/topic/file.md
-LINK_PREFIX_FROM_DOCS_TO_CONTENT = f"../{CONTENT_SOURCE_DIR_NAME}"
+# Link prefix for sidebar items. Since sidebar is at root and content is in 'books/',
+# links will be like "books/topic/file.md"
+LINK_PREFIX_FOR_SIDEBAR = CONTENT_SOURCE_DIR_NAME # This will be "books"
 
 # Scanning and exclusion parameters (similar to update_readme_toc.py)
 MAX_SCAN_DEPTH = 3
@@ -53,12 +52,14 @@ def generate_docsify_sidebar_recursive(current_scan_path_abs, # Absolute path of
 
     # Process subdirectories first
     for dir_name in subdirectories:
-        path_parts_for_link = [base_link_prefix]
-        # Construct relative path from the scan_root_abs (e.g., books/) to the current item
+        path_parts_for_link = []
+        if base_link_prefix: # Only add if not empty
+             path_parts_for_link.append(base_link_prefix)
+
         if current_scan_path_abs != scan_root_abs:
             path_parts_for_link.extend(os.path.relpath(current_scan_path_abs, scan_root_abs).split(os.sep))
         path_parts_for_link.append(dir_name)
-        link_path_for_dir = "/".join(part for part in path_parts_for_link if part != ".") # Avoid ./ in paths
+        link_path_for_dir = "/".join(part for part in path_parts_for_link if part != ".")
 
         readme_in_subdir_path = os.path.join(current_scan_path_abs, dir_name, dir_readme_name)
         if os.path.exists(readme_in_subdir_path):
@@ -83,7 +84,10 @@ def generate_docsify_sidebar_recursive(current_scan_path_abs, # Absolute path of
     for file_name in markdown_files_in_current_dir:
         link_text = file_name[:-3] # Remove .md extension for display
         
-        path_parts_for_link = [base_link_prefix]
+        path_parts_for_link = []
+        if base_link_prefix:
+            path_parts_for_link.append(base_link_prefix)
+            
         if current_scan_path_abs != scan_root_abs:
              path_parts_for_link.extend(os.path.relpath(current_scan_path_abs, scan_root_abs).split(os.sep))
         path_parts_for_link.append(file_name)
@@ -97,31 +101,34 @@ if __name__ == "__main__":
     project_root = os.getcwd()
     content_scan_dir_abs = os.path.abspath(os.path.join(project_root, CONTENT_SOURCE_DIR_NAME))
     
-    docs_dir_abs = os.path.join(project_root, DOCSIFY_ROOT_DIR_NAME)
-    sidebar_file_full_path = os.path.join(docs_dir_abs, SIDEBAR_FILENAME)
+    # sidebar_file_full_path will be at the project root if DOCSIFY_ROOT_DIR_NAME is empty
+    docsify_effective_root_abs = os.path.join(project_root, DOCSIFY_ROOT_DIR_NAME) if DOCSIFY_ROOT_DIR_NAME else project_root
+    sidebar_file_full_path = os.path.join(docsify_effective_root_abs, SIDEBAR_FILENAME)
 
-    # Ensure docs directory exists
-    if not os.path.exists(docs_dir_abs):
-        try:
-            os.makedirs(docs_dir_abs)
-            print(f"Created Docsify root directory: '{docs_dir_abs}'")
-        except OSError as e:
-            print(f"Error: Could not create Docsify root directory '{docs_dir_abs}': {e}", file=sys.stderr)
+    # If DOCSIFY_ROOT_DIR_NAME is not empty and points to a subdir (e.g. "docs"), ensure it exists.
+    # If it's empty (project root), this check is not strictly needed for directory creation.
+    if DOCSIFY_ROOT_DIR_NAME: # Only try to create if a subdirectory is specified
+        if not os.path.exists(docsify_effective_root_abs):
+            try:
+                os.makedirs(docsify_effective_root_abs)
+                print(f"Created Docsify root directory: '{docsify_effective_root_abs}'")
+            except OSError as e:
+                print(f"Error: Could not create Docsify root directory '{docsify_effective_root_abs}': {e}", file=sys.stderr)
+                sys.exit(1)
+        elif not os.path.isdir(docsify_effective_root_abs):
+            print(f"Error: Path for Docsify root '{docsify_effective_root_abs}' exists but is not a directory.", file=sys.stderr)
             sys.exit(1)
-    elif not os.path.isdir(docs_dir_abs):
-        print(f"Error: Path for Docsify root '{docs_dir_abs}' exists but is not a directory.", file=sys.stderr)
-        sys.exit(1)
 
     sidebar_markdown_lines = []
     if not os.path.isdir(content_scan_dir_abs):
         print(f"Warning: Content source directory '{CONTENT_SOURCE_DIR_NAME}' (i.e., '{content_scan_dir_abs}') not found.", file=sys.stderr)
         sidebar_output_string = "  <!-- Content source directory not found -->"
     else:
-        print(f"Generating Docsify sidebar content from '{content_scan_dir_abs}'...")
+        print(f"Generating Docsify sidebar content from '{content_scan_dir_abs}' for '{sidebar_file_full_path}'...")
         sidebar_markdown_lines = generate_docsify_sidebar_recursive(
             current_scan_path_abs=content_scan_dir_abs,
             scan_root_abs=content_scan_dir_abs,
-            base_link_prefix=LINK_PREFIX_FROM_DOCS_TO_CONTENT,
+            base_link_prefix=LINK_PREFIX_FOR_SIDEBAR,
             current_depth=0,
             max_depth=MAX_SCAN_DEPTH,
             exclusions=EXCLUSIONS,

@@ -16,13 +16,14 @@ PYTHON_EXECUTABLE="python3" # 或者 "python"，取决于您的环境
 
 COPY_SCRIPT_NAME="copy_files.py"
 UPDATE_README_SCRIPT_NAME="update_readme_toc.py"
-UPDATE_SIDEBAR_SCRIPT_NAME="update_docsify_sidebar.py" # New script name
+UPDATE_SIDEBAR_SCRIPT_NAME="update_docsify_sidebar.py"
 
 COPY_SCRIPT_PATH="${PROJECT_ROOT}/${COPY_SCRIPT_NAME}"
 UPDATE_README_SCRIPT_PATH="${PROJECT_ROOT}/${UPDATE_README_SCRIPT_NAME}"
-UPDATE_SIDEBAR_SCRIPT_PATH="${PROJECT_ROOT}/${UPDATE_SIDEBAR_SCRIPT_NAME}" # New script path
+UPDATE_SIDEBAR_SCRIPT_PATH="${PROJECT_ROOT}/${UPDATE_SIDEBAR_SCRIPT_NAME}"
 
-DOCSIFY_SIDEBAR_PATH="${PROJECT_ROOT}/docs/_sidebar.md" # Path to the sidebar file for git add
+# 修改：Docsify 侧边栏现在在项目根目录
+DOCSIFY_SIDEBAR_PATH="${PROJECT_ROOT}/_sidebar.md"
 
 # --- 检查 Python 脚本是否存在 ---
 if [ ! -f "${COPY_SCRIPT_PATH}" ]; then
@@ -33,7 +34,7 @@ if [ ! -f "${UPDATE_README_SCRIPT_PATH}" ]; then
     echo -e "${RED}错误：README 更新脚本 '${UPDATE_README_SCRIPT_NAME}' 未在 '${PROJECT_ROOT}' 中找到。${NC}"
     exit 1
 fi
-if [ ! -f "${UPDATE_SIDEBAR_SCRIPT_PATH}" ]; then # Check for the new script
+if [ ! -f "${UPDATE_SIDEBAR_SCRIPT_PATH}" ]; then
     echo -e "${RED}错误：Docsify 侧边栏更新脚本 '${UPDATE_SIDEBAR_SCRIPT_NAME}' 未在 '${PROJECT_ROOT}' 中找到。${NC}"
     exit 1
 fi
@@ -61,7 +62,7 @@ else
 fi
 
 # --- 步骤 2.5: 执行 Docsify 侧边栏更新 ---
-echo -e "\n${GREEN}>>> 步骤 2.5: 开始更新 Docsify 侧边栏 (docs/_sidebar.md)...${NC}"
+echo -e "\n${GREEN}>>> 步骤 2.5: 开始更新 Docsify 侧边栏 (_sidebar.md)...${NC}"
 ${PYTHON_EXECUTABLE} "${UPDATE_SIDEBAR_SCRIPT_PATH}"
 UPDATE_SIDEBAR_EXIT_CODE=$?
 if [ ${UPDATE_SIDEBAR_EXIT_CODE} -ne 0 ]; then
@@ -77,6 +78,7 @@ ORIGINAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 echo -e "${YELLOW}当前操作分支是 '${ORIGINAL_BRANCH}'。${NC}"
 
 echo -e "${YELLOW}正在将所有相关更改添加到 Git 暂存区 (在 '${ORIGINAL_BRANCH}' 分支上)...${NC}"
+# 修改：确保添加根目录下的 _sidebar.md
 git add README.md "${COPY_SCRIPT_PATH}" "${UPDATE_README_SCRIPT_PATH}" "${UPDATE_SIDEBAR_SCRIPT_PATH}" "${PROJECT_ROOT}/manage_library.sh" books/ "${DOCSIFY_SIDEBAR_PATH}"
 
 if ! git diff --cached --quiet; then
