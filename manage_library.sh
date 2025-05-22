@@ -79,7 +79,7 @@ echo -e "${YELLOW}当前操作分支是 '${ORIGINAL_BRANCH}'。${NC}"
 
 echo -e "${YELLOW}正在将所有相关更改添加到 Git 暂存区 (在 '${ORIGINAL_BRANCH}' 分支上)...${NC}"
 # 修改：确保添加根目录下的 _sidebar.md
-git add README.md "${COPY_SCRIPT_PATH}" "${UPDATE_README_SCRIPT_PATH}" "${UPDATE_SIDEBAR_SCRIPT_PATH}" "${PROJECT_ROOT}/manage_library.sh" books/ "${DOCSIFY_SIDEBAR_PATH}"
+git add .
 
 if ! git diff --cached --quiet; then
     COMMIT_MESSAGE="自动化: 更新书籍、README目录和Docsify侧边栏 ($(date +'%Y-%m-%d %H:%M:%S'))"
