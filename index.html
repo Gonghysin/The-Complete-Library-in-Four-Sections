@@ -25,6 +25,17 @@
     #main { /* 注意：Docsify 默认将内容渲染到 <main> 标签，但您提供的示例没有明确指定 #main。如果您的内容不在 #main 中，此样式可能无效。*/
       margin-right: 280px;
     }
+
+    /* 响应式设计：在小屏幕上隐藏右侧TOC */
+    @media (max-width: 768px) {
+      #toc {
+        display: none;
+      }
+      /* 移除主内容的右边距 */
+      main, .markdown-section, #main { /* 覆盖 Docsify 可能的内容容器 */
+        margin-right: 0 !important;
+      }
+    }
   </style>
 </head>
 <body>
