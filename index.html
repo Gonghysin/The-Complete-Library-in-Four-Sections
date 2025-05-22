@@ -1,29 +1,82 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>心海的书籍导航</title>
+  <meta charset="UTF-8" />
+  <title>书籍文档</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <meta name="description" content="心海的书籍导航 - 各类优质书籍的学习笔记与资料">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-plugin-toc@1.1.0/dist/light.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css" />
+  <style>
+    /* 右侧大纲样式 */
+    #toc {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      width: 250px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 10px;
+      background: #f9f9f9;
+      border-left: 1px solid #ddd;
+      font-size: 14px;
+    }
+    /* 调整主内容宽度，避免被右侧toc遮挡 */
+    #main { /* 注意：Docsify 默认将内容渲染到 <main> 标签，但您提供的示例没有明确指定 #main。如果您的内容不在 #main 中，此样式可能无效。*/
+      margin-right: 280px;
+    }
+  </style>
 </head>
 <body>
   <div id="app"></div>
+
+  <div id="toc"></div> <!-- 右侧文章大纲容器 -->
+
   <script>
     window.$docsify = {
-      name: '心海的书籍导航',
-      repo: 'https://github.com/Gonghysin/The-Complete-Library-in-Four-Sections',
+      name: '心海的书籍导航', // 保留了旧的 name
+      repo: 'https://github.com/Gonghysin/The-Complete-Library-in-Four-Sections', // 保留了旧的 repo
       loadSidebar: true,
-      toc: {
-        scope: '.markdown-section',
-        headings: 'h1, h2, h3, h4, h5, h6',
-        title: '本文目录',
-      }
+      subMaxLevel: 2, // 文章大纲显示到二级标题
+      homepage: 'README.md',
+      plugins: [
+        function(hook, vm) {
+          hook.doneEach(function() {
+            // 生成文章目录，插入到右侧toc容器
+            const tocContainer = document.getElementById('toc');
+            if (!tocContainer) return;
+
+            // 清空旧目录
+            tocContainer.innerHTML = '';
+
+            // 查找所有h1和h2标题
+            // 注意：这里选择器是 '#main h1, #main h2'。Docsify 将 Markdown 内容渲染到 <main class="markdown-section"> 元素中。
+            // 如果要更精确，可以是 '.markdown-section h1, .markdown-section h2'
+            const headers = document.querySelectorAll('.markdown-section h1, .markdown-section h2');
+            if (headers.length === 0) return;
+
+            // 创建目录列表
+            let ul = document.createElement('ul');
+            headers.forEach(header => {
+              if (!header.id) {
+                // 如果标题没有id，自动生成
+                header.id = header.textContent.trim().toLowerCase().replace(/\s+/g, '-');
+              }
+              let li = document.createElement('li');
+              li.style.marginLeft = header.tagName === 'H2' ? '20px' : '0';
+              let a = document.createElement('a');
+              a.href = '#' + header.id;
+              a.textContent = header.textContent;
+              li.appendChild(a);
+              ul.appendChild(li);
+            });
+            tocContainer.appendChild(ul);
+          });
+        }
+      ]
     }
   </script>
-  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-plugin-toc@1.1.0"></script>
+
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
 </body>
 </html>
