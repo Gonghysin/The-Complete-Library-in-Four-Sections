@@ -13,28 +13,145 @@
       position: fixed;
       top: 60px;
       right: 20px;
-      width: 250px;
+      width: 280px;
       max-height: 80vh;
       overflow-y: auto;
-      padding: 10px;
-      background: #f9f9f9;
-      border-left: 1px solid #ddd;
+      padding: 20px;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
       font-size: 14px;
+      transition: all 0.3s ease;
+      z-index: 1000;
     }
+
+    #toc:hover {
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* 大纲标题样式 */
+    #toc::before {
+      content: "📑 文章大纲";
+      display: block;
+      font-weight: 600;
+      font-size: 16px;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #3498db;
+      text-align: center;
+    }
+
+    /* 大纲列表样式 */
+    #toc ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #toc li {
+      margin: 8px 0;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    #toc li:hover {
+      background: rgba(52, 152, 219, 0.1);
+      transform: translateX(5px);
+    }
+
+    /* 链接样式 */
+    #toc a {
+      display: block;
+      padding: 8px 12px;
+      color: #34495e;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #toc a::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 3px;
+      height: 100%;
+      background: #3498db;
+      transform: scaleY(0);
+      transition: transform 0.2s ease;
+    }
+
+    #toc a:hover {
+      color: #2980b9;
+      background: rgba(52, 152, 219, 0.08);
+      transform: translateX(3px);
+    }
+
+    #toc a:hover::before {
+      transform: scaleY(1);
+    }
+
+    /* H1 和 H2 标题的区分样式 */
+    #toc li[style*="margin-left: 0"] > a {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    #toc li[style*="margin-left: 20px"] > a {
+      font-weight: 400;
+      color: #7f8c8d;
+      font-size: 13px;
+    }
+
+    #toc li[style*="margin-left: 20px"] > a::before {
+      background: #95a5a6;
+    }
+
+    /* 美化滚动条 */
+    #toc::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #toc::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 3px;
+    }
+
+    #toc::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, #3498db, #2980b9);
+      border-radius: 3px;
+      transition: background 0.2s ease;
+    }
+
+    #toc::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(to bottom, #2980b9, #21618c);
+    }
+
     /* 调整主内容宽度，避免被右侧toc遮挡 */
-    #main { /* 注意：Docsify 默认将内容渲染到 <main> 标签，但您提供的示例没有明确指定 #main。如果您的内容不在 #main 中，此样式可能无效。*/
-      margin-right: 280px;
+    #main {
+      margin-right: 320px;
     }
 
     /* 响应式设计：在小屏幕上隐藏右侧TOC */
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       #toc {
         display: none;
       }
       /* 移除主内容的右边距 */
-      main, .markdown-section, #main { /* 覆盖 Docsify 可能的内容容器 */
+      main, .markdown-section, #main {
         margin-right: 0 !important;
       }
+    }
+
+    /* 当大纲为空时隐藏 */
+    #toc:empty {
+      display: none;
     }
   </style>
 </head>
