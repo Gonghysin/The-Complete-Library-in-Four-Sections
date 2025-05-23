@@ -153,6 +153,23 @@
     #toc:empty {
       display: none;
     }
+
+    /* 高亮文本样式 - 支持 ==text== 语法 */
+    mark {
+      background: linear-gradient(120deg, #a8e6cf 0%, #ffd93d 100%);
+      padding: 2px 4px;
+      border-radius: 3px;
+      color: #2c3e50;
+      font-weight: 500;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    mark:hover {
+      background: linear-gradient(120deg, #88cc9f 0%, #ffcd3c 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
   </style>
 </head>
 <body>
@@ -168,6 +185,13 @@
       subMaxLevel: 2, // 文章大纲显示到二级标题
       homepage: 'README.md',
       plugins: [
+        // 高亮语法插件 - 支持 ==text== 语法
+        function(hook, vm) {
+          hook.beforeEach(function(content) {
+            // 将 ==text== 转换为 <mark>text</mark>
+            return content.replace(/==([\s\S]*?)==/g, '<mark>$1</mark>');
+          });
+        },
         function(hook, vm) {
           hook.doneEach(function() {
             // 生成文章目录，插入到右侧toc容器
